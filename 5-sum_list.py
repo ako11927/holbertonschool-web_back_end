@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
+"""Module for task 5: Complex types - list of floats.
+Contains a type-annotated function that sums a list of floats.
+"""
+from typing import List
 
-sum_list = __import__('5-sum_list').sum_list
 
-floats = [3.14, 1.11, 2.22]
-floats_sum = sum_list(floats)
-print(floats_sum == sum(floats))
-print(sum_list.__annotations__)
-print("sum_list(floats) returns {} which is a {}".format(floats_sum, type(floats_sum)))
+def sum_list(input_list: List[float]) -> float:
+    """Return the sum of all floats in the input list."""
+    return sum(input_list)
