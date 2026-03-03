@@ -1,12 +1,27 @@
 #!/usr/bin/env python3
 """
-Server class to paginate a database of popular baby names with hypermedia support.
+Hypermedia pagination for the baby names dataset.
 """
 
 import csv
 import math
-from typing import List, Dict, Any
-from 0_simple_helper_function import index_range
+from typing import List, Tuple, Dict, Any
+
+
+def index_range(page: int, page_size: int) -> Tuple[int, int]:
+    """
+    Calculate start and end indexes for a given pagination page.
+
+    Args:
+        page (int): Page number (1‑indexed).
+        page_size (int): Number of items per page.
+
+    Returns:
+        Tuple[int, int]: (start_index, end_index)
+    """
+    start = (page - 1) * page_size
+    end = page * page_size
+    return (start, end)
 
 
 class Server:
@@ -18,27 +33,24 @@ class Server:
         self.__dataset = None
 
     def dataset(self) -> List[List]:
-        """Cached dataset
-        """
+        """Cached dataset (without header)."""
         if self.__dataset is None:
             with open(self.DATA_FILE) as f:
                 reader = csv.reader(f)
                 dataset = [row for row in reader]
-            self.__dataset = dataset[1:]
-
+            self.__dataset = dataset[1:]          # skip header
         return self.__dataset
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
         """
-        Retrieve a specific page of the dataset.
+        Retrieve a page of data.
 
         Args:
-            page (int, optional): Page number (1-indexed). Defaults to 1.
-            page_size (int, optional): Number of items per page. Defaults to 10.
+            page (int): Page number (1‑indexed). Defaults to 1.
+            page_size (int): Number of items per page. Defaults to 10.
 
         Returns:
-            List[List]: A list of rows corresponding to the requested page.
-                         If the page is out of range, returns an empty list.
+            List[List]: The rows for the requested page.
         """
         assert isinstance(page, int) and page > 0, \
             "page must be a positive integer"
@@ -51,24 +63,24 @@ class Server:
 
     def get_hyper(self, page: int = 1, page_size: int = 10) -> Dict[str, Any]:
         """
-        Retrieve hypermedia information for a given page.
+        Retrieve hypermedia information for a page.
 
         Args:
-            page (int, optional): Page number (1-indexed). Defaults to 1.
-            page_size (int, optional): Number of items per page. Defaults to 10.
+            page (int): Page number (1‑indexed). Defaults to 1.
+            page_size (int): Number of items per page. Defaults to 10.
 
         Returns:
             Dict[str, Any]: A dictionary containing:
-                - page_size: the length of the returned dataset page
-                - page: the current page number
-                - data: the dataset page (list of rows)
-                - next_page: number of the next page, None if no next page
-                - prev_page: number of the previous page, None if no previous page
-                - total_pages: the total number of pages in the dataset as an integer
+                - page_size: actual number of items returned
+                - page: current page number
+                - data: the page data
+                - next_page: next page number (or None)
+                - prev_page: previous page number (or None)
+                - total_pages: total number of pages
         """
         data = self.get_page(page, page_size)
         total_rows = len(self.dataset())
-        total_pages = math.ceil(total_rows / page_size) if total_rows > 0 else 0
+        total_pages = math.ceil(total_rows / page_size) if total_rows else 0
 
         next_page = page + 1 if page < total_pages else None
         prev_page = page - 1 if page > 1 else None

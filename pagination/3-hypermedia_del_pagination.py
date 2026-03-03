@@ -33,7 +33,6 @@ class Server:
         """
         if self.__indexed_dataset is None:
             dataset = self.dataset()
-            # truncated_dataset = dataset[:1000]  # kept for compatibility
             self.__indexed_dataset = {
                 i: dataset[i] for i in range(len(dataset))
             }
@@ -43,33 +42,26 @@ class Server:
         """
         Return a page of data resilient to deletions.
 
-        The method returns a dictionary with the following keys:
-            - index: the current start index of the return page (requested index)
-            - next_index: the next index to query (first index after the last item on the current page)
-            - page_size: the actual number of items in the current page
-            - data: the list of rows for the current page
-
         Args:
-            index (int, optional): The start index for the page (0‑based). Defaults to 0.
-            page_size (int, optional): The number of items requested. Defaults to 10.
+            index (int, optional): Start index (0‑based). Defaults to 0.
+            page_size (int): Number of items requested. Defaults to 10.
 
         Returns:
-            Dict: A dictionary containing the pagination information.
-
-        Raises:
-            AssertionError: If index is not a valid integer within the dataset range,
-                            or if page_size is not a positive integer.
+            Dict: {
+                'index': requested start index,
+                'data': list of rows,
+                'page_size': actual number of rows returned,
+                'next_index': index to use for the next query
+            }
         """
-        # Ensure the indexed dataset is built
         indexed_data = self.indexed_dataset()
-        # Determine the maximum valid index
-        max_index = max(indexed_data.keys())
+        max_index = max(indexed_data.keys()) if indexed_data else -1
 
-        # Set default index to 0 if None
+        # Handle default index
         if index is None:
             index = 0
 
-        # Validate arguments
+        # Validate inputs
         assert isinstance(index, int) and index >= 0 and index <= max_index, \
             "index must be a non‑negative integer within the dataset range"
         assert isinstance(page_size, int) and page_size > 0, \
@@ -78,13 +70,12 @@ class Server:
         data = []
         current = index
 
-        # Collect page_size items, skipping missing indices
+        # Collect up to page_size items, skipping missing indices
         while len(data) < page_size and current <= max_index:
             if current in indexed_data:
                 data.append(indexed_data[current])
             current += 1
 
-        # The next index to query is the first index after the last considered item
         next_index = current
 
         return {
