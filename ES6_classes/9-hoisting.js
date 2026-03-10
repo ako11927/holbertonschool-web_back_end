@@ -1,4 +1,4 @@
-// Define HolbertonClass first to avoid hoisting issues
+// Define classes first to avoid hoisting issues
 export class HolbertonClass {
   constructor(year, location) {
     this._year = year;
@@ -14,11 +14,10 @@ export class HolbertonClass {
   }
 }
 
-// Now instantiate the classes
+// Now we can safely instantiate the classes
 const class2019 = new HolbertonClass(2019, 'San Francisco');
 const class2020 = new HolbertonClass(2020, 'San Francisco');
 
-// Define StudentHolberton class
 export class StudentHolberton {
   constructor(firstName, lastName, holbertonClass) {
     this._firstName = firstName;
@@ -31,11 +30,11 @@ export class StudentHolberton {
   }
 
   get holbertonClass() {
-    return this._holbertonClass; // Fixed: return stored instance, not the getter itself
+    return this._holbertonClass;       // fixed: return the stored instance
   }
 
   get fullStudentDescription() {
-    // Fixed: use 'this' instead of undefined 'self' and access year/location via getters
+    // fixed: use 'this' instead of 'self' and access getters properly
     return `${this._firstName} ${this._lastName} - ${this._holbertonClass.year} - ${this._holbertonClass.location}`;
   }
 }
@@ -47,5 +46,8 @@ const student3 = new StudentHolberton('Albert', 'Clinton', class2019);
 const student4 = new StudentHolberton('Donald', 'Bush', class2019);
 const student5 = new StudentHolberton('Jason', 'Sandler', class2019);
 
-// Export the list of students
+// Named export (optional, but keeps original structure)
 export const listOfStudents = [student1, student2, student3, student4, student5];
+
+// Default export – this is what the test and 9-main.js import
+export default listOfStudents;
